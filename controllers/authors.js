@@ -1,12 +1,26 @@
 let router = require('express').Router()
+let db = require('../models')
 
 router.get('/', (req, res) => {
-  res.render('authors/index')
+	db.author.findAll()
+	.then((authors) => {
+		res.render('authors/index', { authors })
+	})
+	.catch((err) => {
+		console.log('ERROR', err)
+		res.render('error')
+	})
 })
 
 router.post('/', (req, res) => {
-  console.log(req.body)
-  res.send('posted to authors')
+	db.author.create(req.body)
+	.then(() => {
+		res.redirect('/authors')
+	})
+	.catch((err) => {
+		console.log('ERROR', err)
+		res.render('error')
+	})
 })
 
 router.get('/new', (req, res) => {
@@ -14,7 +28,17 @@ router.get('/new', (req, res) => {
 })
 
 router.get('/:id', (req, res) => {
-  res.render('authors/show')
+	db.author.findOne({
+		where: { id: req.params.id },
+		include: [ db.book ]
+	})
+	.then((author) => {
+		  res.render('authors/show', { author })
+	})
+	.catch((err) => {
+		console.log(err)
+		res.render('error')
+	})
 })
 
 module.exports = router
